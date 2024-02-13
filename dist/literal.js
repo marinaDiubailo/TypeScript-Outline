@@ -7,11 +7,9 @@ var RequestType;
 function fetchWithAuth(url, method) {
 }
 fetchWithAuth('url', 'post');
-fetchWithAuth('url', 's');
 function fetchWithAuth2(url, method) {
 }
 fetchWithAuth2('url', 1);
-fetchWithAuth2('url', 's');
 function fetchWithAuth3(url, method) {
     return 1;
 }

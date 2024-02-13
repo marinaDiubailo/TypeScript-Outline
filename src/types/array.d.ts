@@ -1,0 +1,11 @@
+declare const skills: string[];
+declare const skills2: any;
+declare const result: string;
+declare const skills3: [number, string];
+declare const id: number;
+declare const nam1: string;
+declare const idSkill: number, skillName: string;
+declare const arr: [number, string, ...boolean[]];
+declare const skills4: readonly [number, string];
+declare const skills5: readonly string[];
+declare const skills6: ReadonlyArray<string>;
