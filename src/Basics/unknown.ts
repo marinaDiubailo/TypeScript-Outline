@@ -5,22 +5,22 @@ let resultatt: string = input; // Ошибка: тип unknown не может �
 // unknown более строгий тип чем any
 
 function run(i: unknown) {
-	if (typeof i === 'number') {
-		i++;
-	} else {
-		// сужения типа не происходит
-	}
+  if (typeof i === 'number') {
+    i++;
+  } else {
+    // сужения типа не происходит
+  }
 }
 // случаи, где явно встречается unknown
-async function getData() {
-	try {
-		await fetch('');
-	} catch (error) {
-		// тип unknown
-		if (error instanceof Error) {
-			console.log(error.message);
-		}
-	}
+async function getData1() {
+  try {
+    await fetch('');
+  } catch (error) {
+    // тип unknown
+    if (error instanceof Error) {
+      console.log(error.message);
+    }
+  }
 }
 type UI = unknown | number;
 // union тип с unknown всегда становиться unknown
