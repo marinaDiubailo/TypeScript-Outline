@@ -14,89 +14,85 @@ import 'reflect-metadata';
 const POSITIVE_METADATA_KEY = Symbol('POSITIVE_METADATA_KEY');
 
 interface IUserService12 {
-    getUsersInDatabase(): void;
+  getUsersInDatabase(): void;
 }
 
 class UserService12 implements IUserService12 {
-    private _users: number;
+  private _users: number;
 
-    getUsersInDatabase(): void {
-        this._users;
-    }
+  getUsersInDatabase(): void {
+    this._users;
+  }
 
-    @Validate()
-    setUsersInDatabase(@Positive() num: number): void {
-        this._users = num;
-    }
+  @Validate()
+  setUsersInDatabase(@Positive() num: number): void {
+    this._users = num;
+  }
 }
 
 function Positive() {
-    return (
-        target: Object,
-        propertyKey: string | symbol,
-        parameterIndex: number,
-    ) => {
-        console.log(target); // {}
-        console.log(propertyKey); // setUsersInDatabase
-        console.log(parameterIndex); // 0
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ) => {
+    console.log(target); // {}
+    console.log(propertyKey); // setUsersInDatabase
+    console.log(parameterIndex); // 0
 
-        console.log(Reflect.getOwnMetadata('design:type', target, propertyKey));
-        //[Function: Function]
+    console.log(Reflect.getOwnMetadata('design:type', target, propertyKey));
+    //[Function: Function]
 
-        console.log(
-            Reflect.getOwnMetadata('design:paramtypes', target, propertyKey),
-        );
-        //[ [Function: Number] ]
+    console.log(
+      Reflect.getOwnMetadata('design:paramtypes', target, propertyKey),
+    );
+    //[ [Function: Number] ]
 
-        console.log(
-            Reflect.getOwnMetadata('design:returntype', target, propertyKey),
-        );
-        // undefined
+    console.log(
+      Reflect.getOwnMetadata('design:returntype', target, propertyKey),
+    );
+    // undefined
 
-        let existParams: number[] =
-            Reflect.getOwnMetadata(
-                POSITIVE_METADATA_KEY,
-                target,
-                propertyKey,
-            ) || [];
+    let existParams: number[] =
+      Reflect.getOwnMetadata(POSITIVE_METADATA_KEY, target, propertyKey) || [];
 
-        existParams.push(parameterIndex);
+    existParams.push(parameterIndex);
 
-        Reflect.defineMetadata(
-            POSITIVE_METADATA_KEY,
-            existParams,
-            target,
-            propertyKey,
-        );
-    };
+    Reflect.defineMetadata(
+      POSITIVE_METADATA_KEY,
+      existParams,
+      target,
+      propertyKey,
+    );
+  };
 }
 
 function Validate() {
-    return (
-        target: Object,
-        propertyKey: string | symbol,
-        descriptor: TypedPropertyDescriptor<(...args: any[]) => any | void>,
-    ) => {
-        let method = descriptor.value;
+  return (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => any | void>,
+  ) => {
+    let method = descriptor.value;
 
-        descriptor.value = function (...args: any) {
-            let positiveParams: number[] = Reflect.getOwnMetadata(
-                POSITIVE_METADATA_KEY,
-                target,
-                propertyKey,
-            );
+    descriptor.value = function (...args: any) {
+      let positiveParams: number[] = Reflect.getOwnMetadata(
+        POSITIVE_METADATA_KEY,
+        target,
+        propertyKey,
+      );
 
-            if (positiveParams) {
-                for (let index of positiveParams) {
-                    if (args[index] < 0) {
-                        throw new Error('Число должно быть больше нуля');
-                    }
-                }
-            }
+      if (positiveParams) {
+        for (let index of positiveParams) {
+          if (args[index] < 0) {
+            throw new Error('Число должно быть больше нуля');
+          }
+        }
+      }
 
-            return method?.apply(this, args);
-        };
+      return method?.apply(this, args);
     };
+  };
 }
 
 /** результат при компиляции:

@@ -82,14 +82,14 @@ Function calcEnum() {
 */
 
 enum StatusCode {
-    SUCCESS = 1,
-    IN_PROCESS = 'p',
-    FAILED = 3,
+  SUCCESS = 1,
+  IN_PROCESS = 2,
+  FAILED = 3,
 }
 
 const resultat = {
-    message: 'Платеж успешен',
-    satusCode: StatusCode.SUCCESS,
+  message: 'Платеж успешен',
+  satusCode: StatusCode.SUCCESS,
 };
 
 // 1 -успех
@@ -97,21 +97,20 @@ const resultat = {
 // 3 -отклонен
 
 function action(status: StatusCode) {
-    console.log(status);
+  console.log(status);
 }
 action(StatusCode.SUCCESS); // 1
 action(1); //1
 action(2); // 2
 action(StatusCode.IN_PROCESS); // p
-action(4); // 4
 
 function compute() {
-    return 3;
+  return 3;
 }
 enum Roles {
-    ADMIN = 1,
-    USER = 2,
-    DIRECTOR = compute(),
+  ADMIN = 1,
+  USER = 2,
+  DIRECTOR = compute(),
 }
 // Иногда enum ведет себя как объект
 //function test(x: { ADMIN: number }) {
@@ -119,7 +118,7 @@ enum Roles {
 //}
 //test(Roles);
 const enum Roles2 {
-    ADMIN = 1,
-    USER = 2,
+  ADMIN = 1,
+  USER = 2,
 }
 const res10 = Roles2.ADMIN;

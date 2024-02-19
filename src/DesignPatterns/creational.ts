@@ -144,7 +144,7 @@ class ImageBuilder {
   }
 
   addResolution(width: number, height: number) {
-    this.resolutions.push({width, height});
+    this.resolutions.push({ width, height });
     return this;
   }
 
@@ -208,6 +208,7 @@ class MyMap {
   map: Map<number, string> = new Map();
 
   /**такой контструктор нельзя вызвать вне класса */
+  /**Make the default constructor private, to prevent other objects from using the new operator with the Singleton class. */
   private constructor() {}
 
   clean() {
@@ -215,7 +216,8 @@ class MyMap {
     this.map = new Map();
   }
 
-  public static get(): MyMap {
+  /**Create a static creation method that acts as a constructor. Under the hood, this method calls the private constructor to create an object and saves it in a static field. All following calls to this method return the cached object. */
+  public static getInstance(): MyMap {
     if (!MyMap.instance) {
       MyMap.instance = new MyMap();
     }
@@ -225,14 +227,14 @@ class MyMap {
 
 class ServiceMap {
   addToMap(key: number, value: string) {
-    const myMap = MyMap.get();
+    const myMap = MyMap.getInstance();
     myMap.map.set(key, value);
   }
 }
 
 class ServiceMap2 {
   getKeys(key: number) {
-    const myMap = MyMap.get();
+    const myMap = MyMap.getInstance();
 
     const result = myMap.map.get(key);
     console.log(result);
