@@ -126,7 +126,208 @@ handler.myEvent();
 // Sent
 
 /*-----------------------Command-------------------------- */
+/**
+ * Command is a behavioral design pattern that turns a request into a stand-alone object that contains all information about the request. This transformation lets you pass requests as a method arguments, delay or queue a request’s execution, and support undoable operations.
+ */
+
+class UserI1 {
+  constructor(public userId: number) {}
+}
+
+class CommandHistory {
+  public commands: Command[] = [];
+
+  push(command: Command) {
+    this.commands.push(command);
+  }
+
+  remove(command: Command) {
+    this.commands = this.commands.filter(
+      (c) => c.commandId !== command.commandId,
+    );
+  }
+}
+
+abstract class Command {
+  public commandId: number;
+
+  abstract execute(): void;
+
+  constructor(public history: CommandHistory) {
+    this.commandId = Math.random();
+  }
+}
+
+class AddUserCommand extends Command {
+  constructor(
+    private user: UserI1,
+    private receiver: UserIService,
+    history: CommandHistory,
+  ) {
+    super(history);
+  }
+
+  execute() {
+    this.receiver.saveUser(this.user);
+    this.history.push(this);
+  }
+
+  undo() {
+    this.receiver.deleteUser(this.user.userId);
+    this.history.remove(this);
+  }
+}
+
+class UserIService {
+  saveUser(user: UserI1) {
+    console.log(`сохраняю юзера с id ${user.userId}`);
+  }
+
+  deleteUser(userId: number) {
+    console.log(`удаляю юзера с id ${userId}`);
+  }
+}
+
+class ControllerI {
+  receiver: UserIService;
+  history: CommandHistory = new CommandHistory();
+
+  addReceiver(receiver: UserIService) {
+    this.receiver = receiver;
+  }
+
+  run() {
+    const addUserCommand = new AddUserCommand(
+      new UserI1(1),
+      this.receiver,
+      this.history,
+    );
+    addUserCommand.execute();
+    console.log(addUserCommand.history);
+    addUserCommand.undo();
+    console.log(addUserCommand.history);
+  }
+}
+
+const controllerI = new ControllerI();
+controllerI.addReceiver(new UserIService());
+controllerI.run();
+/**
+ * сохраняю юзера с id 1
+<ref *1> CommandHistory {
+  commands: [
+    AddUserCommand {
+      history: [Circular *1],
+      commandId: 0.5482825105464912,
+      user: [UserI1],
+      receiver: UserIService {}
+    }
+  ]
+}
+удаляю юзера с id 1
+CommandHistory { commands: [] }
+ */
+
 /*------------------------State--------------------------- */
+/**
+ * The pattern extracts state-related behaviors into separate state classes and forces the original object to delegate the work to an instance of these classes, instead of acting on its own.
+ */
+
+class DocumentItem {
+  public text: string;
+  private state: DocumentItemState;
+
+  constructor() {
+    this.setState(new DraftDocumentItemState());
+  }
+
+  setState(state: DocumentItemState) {
+    this.state = state;
+    this.state.setContext(this);
+  }
+
+  getState() {
+    return this.state;
+  }
+
+  publishDoc() {
+    this.state.publish();
+  }
+  deleteDoc() {
+    this.state.delete();
+  }
+}
+
+abstract class DocumentItemState {
+  public name: string;
+  public item: DocumentItem;
+
+  public setContext(item: DocumentItem) {
+    this.item = item;
+  }
+
+  public abstract publish(): void;
+  public abstract delete(): void;
+}
+
+class DraftDocumentItemState extends DocumentItemState {
+  constructor() {
+    super();
+    this.name = 'Draft';
+  }
+
+  public override publish(): void {
+    console.log(`Текст опубликован - ${this.item.text}`);
+    this.item.setState(new PublishDocumentItemState());
+  }
+
+  public override delete(): void {
+    console.log(`Текст удален - ${this.item.text}`);
+  }
+}
+
+class PublishDocumentItemState extends DocumentItemState {
+  constructor() {
+    super();
+    this.name = 'Publish';
+  }
+
+  public publish(): void {
+    console.log(`Нельзя опубликовать опубликованные документ`);
+  }
+
+  public delete(): void {
+    console.log(`Снято с публикации`);
+    this.item.setState(new DraftDocumentItemState());
+  }
+}
+
+const itemText = new DocumentItem();
+itemText.text = 'My text here!';
+
+console.log(itemText.getState());
+itemText.publishDoc();
+console.log(itemText.getState());
+itemText.deleteDoc();
+console.log(itemText.getState());
+
+/**
+ * <ref *1> DraftDocumentItemState {
+  name: 'Draft',
+  item: DocumentItem { state: [Circular *1], text: 'My text here!' }
+}
+Текст опубликован - My text here!
+<ref *1> PublishDocumentItemState {
+  name: 'Publish',
+  item: DocumentItem { state: [Circular *1], text: 'My text here!' }
+}
+Снято с публикации
+<ref *1> DraftDocumentItemState {
+  name: 'Draft',
+  item: DocumentItem { state: [Circular *1], text: 'My text here!' }
+}
+ */
+
 /*------------------------Strategy------------------------ */
 /*------------------------Iterator------------------------ */
 /*---------------------Template method-------------------- */
