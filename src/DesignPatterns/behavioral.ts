@@ -329,6 +329,271 @@ console.log(itemText.getState());
  */
 
 /*------------------------Strategy------------------------ */
+/**Strategy is a behavioral design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable. */
+
+class UserS {
+  githubToken: string;
+  jwtToken: string;
+}
+
+interface IAuthStrategy {
+  auth(user: UserS): boolean;
+}
+
+class AuthStrategy {
+  constructor(private strategy: IAuthStrategy) {}
+
+  setStrategy(strategy: IAuthStrategy) {
+    this.strategy = strategy;
+  }
+
+  public authUser(user: UserS): boolean {
+    return this.strategy.auth(user);
+  }
+}
+
+class JWTStrategy implements IAuthStrategy {
+  auth(user: UserS): boolean {
+    if (user.jwtToken) {
+      return true;
+    }
+    return false;
+  }
+}
+
+class GithubStrategy implements IAuthStrategy {
+  auth(user: UserS): boolean {
+    if (user.githubToken) {
+      return true;
+    }
+    return false;
+  }
+}
+
+const userS = new UserS();
+userS.jwtToken = 'token';
+const authS = new AuthStrategy(new JWTStrategy());
+console.log(authS.authUser(userS)); // true
+authS.setStrategy(new GithubStrategy());
+console.log(authS.authUser(userS)); //false
+
 /*------------------------Iterator------------------------ */
+/**Iterator is a behavioral design pattern that lets you traverse elements of a collection without exposing its underlying representation (list, stack, tree, etc.). */
+
+class TaskI {
+  constructor(public priority: number) {}
+}
+
+class TaskList {
+  private tasks: TaskI[] = [];
+
+  public addTask(task: TaskI) {
+    this.tasks.push(task);
+  }
+
+  public getTasks() {
+    return this.tasks;
+  }
+
+  public count() {
+    return this.tasks.length;
+  }
+
+  public sortByPriority() {
+    this.tasks.sort((a, b) => {
+      if (a.priority > b.priority) {
+        return 1;
+      } else if (a.priority < b.priority) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
+  }
+
+  public getIterator() {
+    return new PriorityTaskIterator(this);
+  }
+}
+
+interface IIterator<T> {
+  current(): T | undefined;
+  next(): T | undefined;
+  prev(): T | undefined;
+  index(): number;
+}
+
+class PriorityTaskIterator implements IIterator<TaskI> {
+  private position: number = 0;
+  private taskList: TaskList;
+
+  constructor(taskList: TaskList) {
+    taskList.sortByPriority();
+    this.taskList = taskList;
+  }
+
+  current(): TaskI | undefined {
+    return this.taskList.getTasks()[this.position];
+  }
+
+  next(): TaskI | undefined {
+    this.position += 1;
+    return this.taskList.getTasks()[this.position];
+  }
+
+  prev(): TaskI | undefined {
+    this.position -= 1;
+    return this.taskList.getTasks()[this.position];
+  }
+
+  index(): number {
+    return this.position;
+  }
+}
+
+const taskListI = new TaskList();
+taskListI.addTask(new TaskI(8));
+taskListI.addTask(new TaskI(1));
+taskListI.addTask(new TaskI(3));
+
+const iteratorI = taskListI.getIterator();
+
+console.log(iteratorI.current()); // TaskI { priority: 1 }
+console.log(iteratorI.next()); // TaskI { priority: 3 }
+console.log(iteratorI.next()); // TaskI { priority: 8 }
+console.log(iteratorI.prev()); // TaskI { priority: 3 }
+console.log(iteratorI.index()); // 1
 /*---------------------Template method-------------------- */
-/*------------------------Onserver------------------------ */
+/**Template Method is a behavioral design pattern that defines the skeleton of an algorithm in the superclass but lets subclasses override specific steps of the algorithm without changing its structure. */
+
+class Form {
+  constructor(public name: string) {}
+}
+
+abstract class SaveForm<T> {
+  public save(form: Form) {
+    const res = this.fill(form);
+    this.log(res);
+    this.send(res);
+  }
+  protected abstract fill(form: Form): T;
+
+  protected log(data: T): void {
+    console.log(data);
+  }
+
+  protected abstract send(data: T): void;
+}
+
+class FirstAPI extends SaveForm<string> {
+  protected fill(form: Form): string {
+    return form.name;
+  }
+
+  protected send(data: string): void {
+    console.log(data, 'Отправляю');
+  }
+}
+
+class SecondAPI extends SaveForm<{ fio: string }> {
+  protected fill(form: Form): { fio: string } {
+    return { fio: form.name };
+  }
+
+  protected send(data: { fio: string }): void {
+    console.log(data.fio, 'Отправляю фио');
+  }
+}
+
+const form1 = new FirstAPI();
+form1.save(new Form('Vasya'));
+
+const form2 = new SecondAPI();
+form2.save(new Form('Vasya'));
+
+/**Vasya
+Vasya Отправляю
+{ fio: 'Vasya' }
+Vasya Отправляю фио */
+/*------------------------Observer------------------------ */
+/**Observer is a behavioral design pattern that lets you define a subscription mechanism to notify multiple objects about any events that happen to the object they’re observing.
+
+ */
+interface Subject {
+  attach(observer: Observer): void;
+  detach(observer: Observer): void;
+  notify(): void;
+}
+
+interface Observer {
+  update(subject: Subject): void;
+}
+
+class Lead {
+  constructor(public name: string, public phone: string) {}
+}
+
+class NewLead implements Subject {
+  private observers: Observer[] = [];
+  public state: Lead;
+
+  attach(observer: Observer): void {
+    if (this.observers.includes(observer)) {
+      return;
+    }
+    this.observers.push(observer);
+  }
+  detach(observer: Observer): void {
+    const observerIdx = this.observers.indexOf(observer);
+
+    if (observerIdx === -1) {
+      return;
+    }
+    this.observers.splice(observerIdx, 1);
+  }
+  notify(): void {
+    for (const observer of this.observers) {
+      observer.update(this);
+    }
+  }
+}
+
+class NotifService implements Observer {
+  update(subject: Subject): void {
+    console.log('NotifService получил уведомление');
+    console.log(subject);
+  }
+}
+
+class LeadService implements Observer {
+  update(subject: Subject): void {
+    console.log('LeadService получил уведомление');
+    console.log(subject);
+  }
+}
+
+const subject = new NewLead();
+subject.state = new Lead('Ivan', '+375331253674');
+const s1 = new NotifService();
+const s2 = new LeadService();
+
+subject.attach(s1);
+subject.attach(s2);
+subject.notify();
+subject.detach(s1);
+subject.notify();
+/**NotifService получил уведомление
+NewLead {
+  observers: [ NotifService {}, LeadService {} ],
+  state: Lead { name: 'Ivan', phone: '+375331253674' }
+}
+LeadService получил уведомление
+NewLead {
+  observers: [ NotifService {}, LeadService {} ],
+  state: Lead { name: 'Ivan', phone: '+375331253674' }
+}
+LeadService получил уведомление
+NewLead {
+  observers: [ LeadService {} ],
+  state: Lead { name: 'Ivan', phone: '+375331253674' }
+} */
